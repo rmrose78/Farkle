@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css" />
+    <title>Farkle</title>
+  </head>
+  <body>
+    <!-- Main Page -->
+    <div class="reset-container">
+      <button class="btn btn-reset">Reset</button>
+    </div>
+    <div class="main">
+      <div class="Reset"></div>
+      <h1>Farkle</h1>
+      <div class="currentPoints-container">
+        <h3>Points:</h3>
+        <h3 class="currentPoints">0</h3>
+      </div>
+      <div class="diceArea">
+        <h2>DICE AREA</h2>
+      </div>
+      <div class="bottom-conatiner">
+        <div class="player1-container active">
+          <h3 class="playerTitle">P1:</h3>
+          <div class="player1-score">
+            <h2>0</h2>
+          </div>
+        </div>
+        <div class="btn-container">
+          <button class="btn-action btn-roll">ROLL</button>
+          <button class="btn-action btn-hold">HOLD</button>
+        </div>
+        <div class="player2-container">
+          <h3 class="playerTitle">P2:</h3>
+          <div class="player2-score">
+            <h2>0</h2>
+          </div>
+        </div>
+      </div>
+      <div class="condition">
+        <p>First to <span class="winCondition">10,000</span> wins</p>
+      </div>
+    </div>
+    <script src="script.js"></script>
+  </body>
+</html>
