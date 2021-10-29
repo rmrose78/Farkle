@@ -102,6 +102,23 @@ p {
 .active {
   border: 4px solid #4682b4;
 }
+/* --------------- Dice Area --------------- */
+.dice-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.dice {
+  width: auto;
+  height: 80px;
+  border: 4px solid #4682b4;
+  margin-right: 30px;
+  cursor: pointer;
+}
+
+.select {
+  border: 12px solid #4682b4;
+}
 /* --------------- Buttons --------------- */
 button {
   background-color: black;
