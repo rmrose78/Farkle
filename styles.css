@@ -116,8 +116,8 @@ p {
   cursor: pointer;
 }
 
-.hold {
-  border: 12px solid #4682b4;
+.select {
+  border: 16px solid #4682b4;
 }
 /* --------------- Buttons --------------- */
 button {

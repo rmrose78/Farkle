@@ -1,56 +1,93 @@
+const rollButton = document.getElementById("roll-button");
+const holdButton = document.getElementById("hold-button");
+const diceAll = document.querySelectorAll("dice");
+const activePlayer_1 = document.getElementById("player1");
+const activePlayer_2 = document.getElementById("player2");
+
 const dice = [
   {
     dice_num: 1,
-    dice_img: "/images/1_dice.png",
+    dice_img: "./images/1_dice.png",
   },
   {
     dice_num: 2,
-    dice_img: "/images/2_dice.png",
+    dice_img: "./images/2_dice.png",
   },
   {
     dice_num: 3,
-    dice_img: "/images/3_dice.png",
+    dice_img: "./images/3_dice.png",
   },
   {
     dice_num: 4,
-    dice_img: "/images/4_dice.png",
+    dice_img: "./images/4_dice.png",
   },
   {
     dice_num: 5,
-    dice_img: "/images/5_dice.png",
+    dice_img: "./images/5_dice.png",
   },
   {
     dice_num: 6,
-    dice_img: "/images/6_dice.png",
+    dice_img: "./images/6_dice.png",
   },
 ];
 
 const dice_position = [
-  { diceP1: document.querySelector("dice-pos1") },
-  { diceP2: document.querySelector("dice-pos2") },
-  { diceP3: document.querySelector("dice-pos3") },
-  { diceP4: document.querySelector("dice-pos4") },
-  { diceP5: document.querySelector("dice-pos5") },
-  { diceP6: document.querySelector("dice-pos6") },
+  document.getElementById("dice-pos1"),
+  document.getElementById("dice-pos2"),
+  document.getElementById("dice-pos3"),
+  document.getElementById("dice-pos4"),
+  document.getElementById("dice-pos5"),
+  document.getElementById("dice-pos6"),
 ];
 
-// const dice_1 = document.querySelector("dice-pos1");
-// const dice_2 = document.querySelector("dice-pos2");
-// const dice_3 = document.querySelector("dice-pos3");
-// const dice_4 = document.querySelector("dice-pos4");
-// const dice_5 = document.querySelector("dice-pos5");
-// const dice_6 = document.querySelector("dice-pos6");
+// Functions
 
-function rollDie() {
+const rollDie = () => {
   return Math.floor(Math.random() * 6) + 1;
-}
+};
 
-function rollAvailableDice() {
-  for (let i = 0; (x = dice_position.length - 1); i++) {
-    x;
+const rollAvailableDice = () => {
+  let tempRoll = rollDie();
+
+  for (let i = 0; i < dice_position.length; i++) {
+    if (dice_position[i].classList.value === "dice select") {
+      continue;
+    } else {
+      dice_position[i].src = dice[tempRoll - 1]["dice_img"];
+      tempRoll = rollDie();
+    }
   }
-}
+};
 
-// function holdDice() {}
+// Roll dice
+rollButton.addEventListener("click", rollAvailableDice());
 
-// function selectDiceHold() {}
+// Select Die
+
+dice_position[0].addEventListener("click", () => {
+  dice_position[0].classList.toggle("select");
+});
+dice_position[1].addEventListener("click", () => {
+  dice_position[1].classList.toggle("select");
+});
+dice_position[2].addEventListener("click", () => {
+  dice_position[2].classList.toggle("select");
+});
+dice_position[3].addEventListener("click", () => {
+  dice_position[3].classList.toggle("select");
+});
+dice_position[4].addEventListener("click", () => {
+  dice_position[4].classList.toggle("select");
+});
+dice_position[5].addEventListener("click", () => {
+  dice_position[5].classList.toggle("select");
+});
+
+// holdButton.addEventListener("click", () => {
+//   for (i = 0; i < dice_position.length; i++) {
+//     dice_position[i].classList.remove("select");
+//   }
+
+//   activePlayer_1.classList.toggle("active");
+//   activePlayer_2.classList.toggle("active");
+// });
