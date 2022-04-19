@@ -1,93 +1,122 @@
+// --- Constants --- \\
 const rollButton = document.getElementById("roll-button");
 const holdButton = document.getElementById("hold-button");
 const diceAll = document.querySelectorAll("dice");
 const activePlayer_1 = document.getElementById("player1");
 const activePlayer_2 = document.getElementById("player2");
+const dice_positions = document.getElementsByClassName('dice');
 
-const dice = [
-  {
-    dice_num: 1,
-    dice_img: "./images/1_dice.png",
-  },
-  {
-    dice_num: 2,
-    dice_img: "./images/2_dice.png",
-  },
-  {
-    dice_num: 3,
-    dice_img: "./images/3_dice.png",
-  },
-  {
-    dice_num: 4,
-    dice_img: "./images/4_dice.png",
-  },
-  {
-    dice_num: 5,
-    dice_img: "./images/5_dice.png",
-  },
-  {
-    dice_num: 6,
-    dice_img: "./images/6_dice.png",
-  },
-];
+const diceImages = [
+  "./images/1_dice.png",
+  "./images/2_dice.png",
+  "./images/3_dice.png",
+  "./images/4_dice.png",
+  "./images/5_dice.png",
+  "./images/6_dice.png",
+]
 
-const dice_position = [
-  document.getElementById("dice-pos1"),
-  document.getElementById("dice-pos2"),
-  document.getElementById("dice-pos3"),
-  document.getElementById("dice-pos4"),
-  document.getElementById("dice-pos5"),
-  document.getElementById("dice-pos6"),
-];
+// --- Global variables --- \\
+let diceAvailableArray = []
+let diceSelectedArray = []
+let ignorePositionsArray = []
 
-// Functions
 
+// --- Functions --- \\
+// Rolling Dice
 const rollDie = () => {
   return Math.floor(Math.random() * 6) + 1;
 };
 
 const rollAvailableDice = () => {
-  let tempRoll = rollDie();
+  let tempRoll = 0;
+  diceAvailableArray = []
+  ignorePositionsArray =[]
+  diceSelectedArray = []
 
-  for (let i = 0; i < dice_position.length; i++) {
-    if (dice_position[i].classList.value === "dice select") {
-      continue;
+  for (let i = 0; i < dice_positions.length; i++) {
+    tempRoll = rollDie()
+    if (dice_positions[i].classList.value === "dice select") {
+      ignorePositionsArray.push(i)
     } else {
-      dice_position[i].src = dice[tempRoll - 1]["dice_img"];
-      tempRoll = rollDie();
+      diceAvailableArray.push(tempRoll)
+      dice_positions[i].src = diceImages[tempRoll - 1];
     }
   }
 };
 
+// Check dice after selected
+const diceCheck = () => {
+  diceSelectedArray = []
+
+  for (let i = 0; i < dice_positions.length; i++) {
+      if (dice_positions[i].className !== 'dice select' || ignorePositionsArray.includes(i)) {
+        continue
+      } else {
+      diceSelectedArray.push(checkImageForRollValue(i))
+    }
+  }
+  console.log(`Dice selected: ${diceSelectedArray}`);
+}
+
+const checkImageForRollValue = (positionNum) => {
+  let temp = dice_positions[positionNum].src
+  let srcString = temp.substring(temp.length - 10, temp.length)
+  let rollValue = []
+
+  switch (srcString) {
+    case '1_dice.png':
+      rollValue = 1
+      break
+    case '2_dice.png':
+      rollValue = 2
+      break
+    case '3_dice.png':
+      rollValue = 3
+      break
+    case '4_dice.png':
+      rollValue = 4
+      break
+    case '5_dice.png':
+      rollValue = 5
+      break
+    case '6_dice.png':
+      rollValue = 6
+      break
+  }
+return rollValue
+}
+
+// Points logic
+
+
+// Hold dice
+const holdPlayerSwitch = () => {
+  for (i = 0; i < dice_positions.length; i++) {
+    dice_positions[i].classList.remove("select");
+  }
+
+  activePlayer_1.classList.toggle("active");
+  activePlayer_2.classList.toggle("active");
+
+  diceAvailableArray = []
+  ignorePositionsArray = []
+  diceSelectedArray = [];
+
+  //remove and reset to blank dice
+  rollAvailableDice()
+}
+
+// --- Event listeners ---
 // Roll dice
-rollButton.addEventListener("click", rollAvailableDice());
+rollButton.addEventListener("click", rollAvailableDice);
+
+// Hold
+holdButton.addEventListener("click", holdPlayerSwitch);
 
 // Select Die
-
-dice_position[0].addEventListener("click", () => {
-  dice_position[0].classList.toggle("select");
-});
-dice_position[1].addEventListener("click", () => {
-  dice_position[1].classList.toggle("select");
-});
-dice_position[2].addEventListener("click", () => {
-  dice_position[2].classList.toggle("select");
-});
-dice_position[3].addEventListener("click", () => {
-  dice_position[3].classList.toggle("select");
-});
-dice_position[4].addEventListener("click", () => {
-  dice_position[4].classList.toggle("select");
-});
-dice_position[5].addEventListener("click", () => {
-  dice_position[5].classList.toggle("select");
-});
-
-// holdButton.addEventListener("click", () => {
-//   for (i = 0; i < dice_position.length; i++) {
-//     dice_position[i].classList.remove("select");
-//   }
-
-//   activePlayer_1.classList.toggle("active");
-//   activePlayer_2.classList.toggle("active");
-// });
+for (let i = 0; i < dice_positions.length; i++) {
+  dice_positions[i].addEventListener('click', () => {
+    dice_positions[i].classList.toggle("select")
+    diceCheck()
+  })
+}
