@@ -16,9 +16,12 @@ const diceImages = [
 ]
 
 // --- Global variables --- \\
-let diceAvailableArray = []
-let diceSelectedArray = []
-let ignorePositionsArray = []
+let dice = []
+let diceAvailable = []
+let diceSelected = []
+let ignoreRoll = []
+let roundPointsTotal = 0
+
 
 
 // --- Functions --- \\
@@ -28,66 +31,41 @@ const rollDie = () => {
 };
 
 const rollAvailableDice = () => {
+  diceAvailable = []
+  diceSelected = []
+  let tempIgnoreRoll = []
+  let tempDice = []
   let tempRoll = 0;
-  diceAvailableArray = []
-  ignorePositionsArray =[]
-  diceSelectedArray = []
-
+  
   for (let i = 0; i < dice_positions.length; i++) {
     tempRoll = rollDie()
-    if (dice_positions[i].classList.value === "dice select") {
-      ignorePositionsArray.push(i)
+    if (dice_positions[i].classList[1] === 'select') {
+      tempDice.push(dice[i])
+      tempIgnoreRoll.push(true)
     } else {
-      diceAvailableArray.push(tempRoll)
+      tempDice.push(tempRoll)
+      diceAvailable.push(tempRoll)
+      tempIgnoreRoll.push(false)
       dice_positions[i].src = diceImages[tempRoll - 1];
     }
   }
+  dice = tempDice
+  ignoreRoll = tempIgnoreRoll
 };
 
 // Check dice after selected
 const diceCheck = () => {
-  diceSelectedArray = []
+  diceSelected = []
 
   for (let i = 0; i < dice_positions.length; i++) {
-      if (dice_positions[i].className !== 'dice select' || ignorePositionsArray.includes(i)) {
+      if (dice_positions[i].classList[1] !== 'select' || ignoreRoll[i]) {
         continue
       } else {
-      diceSelectedArray.push(checkImageForRollValue(i))
+      diceSelected.push(dice[i])
     }
   }
-  console.log(`Dice selected: ${diceSelectedArray}`);
+  console.log(`Dice selected: ${diceSelected}`);
 }
-
-const checkImageForRollValue = (positionNum) => {
-  let temp = dice_positions[positionNum].src
-  let srcString = temp.substring(temp.length - 10, temp.length)
-  let rollValue = []
-
-  switch (srcString) {
-    case '1_dice.png':
-      rollValue = 1
-      break
-    case '2_dice.png':
-      rollValue = 2
-      break
-    case '3_dice.png':
-      rollValue = 3
-      break
-    case '4_dice.png':
-      rollValue = 4
-      break
-    case '5_dice.png':
-      rollValue = 5
-      break
-    case '6_dice.png':
-      rollValue = 6
-      break
-  }
-return rollValue
-}
-
-// Points logic
-
 
 // Hold dice
 const holdPlayerSwitch = () => {
@@ -98,12 +76,72 @@ const holdPlayerSwitch = () => {
   activePlayer_1.classList.toggle("active");
   activePlayer_2.classList.toggle("active");
 
-  diceAvailableArray = []
-  ignorePositionsArray = []
-  diceSelectedArray = [];
+  diceAvailable = []
+  ignoreRoll = []
+  diceSelected = [];
 
   //remove and reset to blank dice
   rollAvailableDice()
+}
+
+// Game Points Logic
+const selectedDiceScore = () => {
+  const uncommitedPoints = document.getElementById("currentPoints");
+
+  let selectedPoints = 0
+  diceSelected = diceSelected.sort()
+  
+  for (let i = 0; i < diceSelected.length; i++) {
+    switch (true) {
+      // Four of a kind
+      case diceSelected[i] === diceSelected[i - 1] && diceSelected[i] === diceSelected[i - 2] && diceSelected[i] === diceSelected[i - 3]:
+        selectedPoints = 1000
+        break
+        // Three of a kind
+      case diceSelected[i] === diceSelected[i - 1] && diceSelected[i] === diceSelected[i - 2]:
+          // Number for points
+        switch (true) {
+          case diceSelected[i] === 1:
+            selectedPoints = 300
+            break
+          case diceSelected[i] === 2:
+            selectedPoints = 200
+            break
+          case diceSelected[i] === 3:
+            selectedPoints = 300
+            break
+          case diceSelected[i] === 4:
+            selectedPoints = 400
+            break
+          case diceSelected[i] === 5:
+            selectedPoints = 500
+            break
+          case diceSelected[i] === 6:
+            selectedPoints = 600
+            break
+        }
+      // Two - 1s
+      case diceSelected[i] === 1 && diceSelected[i - 1] === 1:
+        selectedPoints = 200
+        break
+      // One - 1s
+      case diceSelected[i] === 1:
+        selectedPoints = 100
+        break
+      // Two - 5s
+      case diceSelected[i] === 5 && diceSelected[i] == 5:
+        selectedPoints = 100
+        break
+      // One - 5s
+      case diceSelected[i] === 5:
+        selectedPoints = 50
+        break
+      default:
+        selectedPoints = 20;
+    }
+  }
+  uncommitedPoints.innerHTML = selectedPoints
+  console.log(diceSelected)
 }
 
 // --- Event listeners ---
@@ -118,5 +156,6 @@ for (let i = 0; i < dice_positions.length; i++) {
   dice_positions[i].addEventListener('click', () => {
     dice_positions[i].classList.toggle("select")
     diceCheck()
+    selectedDiceScore()
   })
 }

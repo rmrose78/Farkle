@@ -99,7 +99,7 @@ p {
   flex-direction: column;
 }
 
-.currentPoints {
+#currentPoints {
   display: flex;
   align-items: center;
   justify-content: center;
