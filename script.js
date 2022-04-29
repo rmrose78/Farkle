@@ -22,8 +22,6 @@ let diceSelected = []
 let ignoreRoll = []
 let roundPointsTotal = 0
 
-
-
 // --- Functions --- \\
 // Rolling Dice
 const rollDie = () => {
@@ -90,6 +88,7 @@ const selectedDiceScore = () => {
 
   let selectedPoints = 0
   diceSelected = diceSelected.sort()
+  
   
   for (let i = 0; i < diceSelected.length; i++) {
     switch (true) {
