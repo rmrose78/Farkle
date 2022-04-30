@@ -4,7 +4,10 @@ const holdButton = document.getElementById("hold-button");
 const diceAll = document.querySelectorAll("dice");
 const activePlayer_1 = document.getElementById("player1");
 const activePlayer_2 = document.getElementById("player2");
+const valuePlayer_1 = document.getElementById("player1-score--value")
+const valuePlayer_2 = document.getElementById("player2-score--value")
 const dice_positions = document.getElementsByClassName('dice');
+const uncommitedPoints = document.getElementById("currentPoints")
 
 const diceImages = [
   "./images/1_dice.png",
@@ -15,12 +18,18 @@ const diceImages = [
   "./images/6_dice.png",
 ]
 
+const diceImageBlank = "/images/blank_dice.png"
+
 // --- Global variables --- \\
 let dice = []
 let diceAvailable = []
 let diceSelected = []
 let ignoreRoll = []
-let roundPointsTotal = 0
+let roundPoints = 0
+let pointsPlayer1 = 0
+let pointsPlayer2 = 0
+let points = 0
+let totalPoints = 0
 
 // --- Functions --- \\
 // Rolling Dice
@@ -34,6 +43,8 @@ const rollAvailableDice = () => {
   let tempIgnoreRoll = []
   let tempDice = []
   let tempRoll = 0;
+  roundPoints += points
+  points = 0
   
   for (let i = 0; i < dice_positions.length; i++) {
     tempRoll = rollDie()
@@ -62,13 +73,29 @@ const diceCheck = () => {
       diceSelected.push(dice[i])
     }
   }
-  console.log(`Dice selected: ${diceSelected}`);
+  diceSelected = diceSelected.sort()
+  selectedDiceScore()
+
+  console.log(`points: ${points}`)
+  console.log(`roundPoints: ${roundPoints}`)
+  totalPoints = roundPoints + points
+  console.log(`totalPoints: ${totalPoints}`)
+  uncommitedPoints.innerHTML = totalPoints
 }
 
 // Hold dice
 const holdPlayerSwitch = () => {
+  if (activePlayer_1.classList[1] === 'active') {
+    pointsPlayer1 += roundPoints + points
+    valuePlayer_1.innerHTML = pointsPlayer1
+  } else {
+    pointsPlayer2 += roundPoints + points
+    valuePlayer_2.innerHTML = pointsPlayer2
+  }
+
   for (i = 0; i < dice_positions.length; i++) {
     dice_positions[i].classList.remove("select");
+    dice_positions[i].src = diceImageBlank
   }
 
   activePlayer_1.classList.toggle("active");
@@ -77,71 +104,90 @@ const holdPlayerSwitch = () => {
   diceAvailable = []
   ignoreRoll = []
   diceSelected = [];
-
-  //remove and reset to blank dice
-  rollAvailableDice()
+  uncommitedPoints.innerHTML = 0
+  roundPoints = 0
 }
 
 // Game Points Logic
 const selectedDiceScore = () => {
-  const uncommitedPoints = document.getElementById("currentPoints");
+  let freqObj = {}
+  let freqObjKeyNamesArr = []
+  points = 0
 
-  let selectedPoints = 0
-  diceSelected = diceSelected.sort()
-  
-  
-  for (let i = 0; i < diceSelected.length; i++) {
+  if (dice_positions[0].src === diceImageBlank) {
+    return points = 0
+  } else {
+    diceSelected.forEach(die => {
+      if (freqObj[die]) {
+        freqObj[die]++
+      } else {
+        freqObj[die] = 1
+      }
+    })
+    freqObjKeyNamesArr= Object.keys(freqObj)
     switch (true) {
-      // Four of a kind
-      case diceSelected[i] === diceSelected[i - 1] && diceSelected[i] === diceSelected[i - 2] && diceSelected[i] === diceSelected[i - 3]:
-        selectedPoints = 1000
+      // 6 of a kind
+      case freqObj[`${freqObjKeyNamesArr[0]}`] === 6:
+        points += 3000
         break
-        // Three of a kind
-      case diceSelected[i] === diceSelected[i - 1] && diceSelected[i] === diceSelected[i - 2]:
-          // Number for points
-        switch (true) {
-          case diceSelected[i] === 1:
-            selectedPoints = 300
-            break
-          case diceSelected[i] === 2:
-            selectedPoints = 200
-            break
-          case diceSelected[i] === 3:
-            selectedPoints = 300
-            break
-          case diceSelected[i] === 4:
-            selectedPoints = 400
-            break
-          case diceSelected[i] === 5:
-            selectedPoints = 500
-            break
-          case diceSelected[i] === 6:
-            selectedPoints = 600
-            break
-        }
-      // Two - 1s
-      case diceSelected[i] === 1 && diceSelected[i - 1] === 1:
-        selectedPoints = 200
+      // Two triplets
+      case freqObj[`${freqObjKeyNamesArr[0]}`] === 3 && freqObj[`${freqObjKeyNamesArr[1]}`] === 3:
+        points += 2500
         break
-      // One - 1s
-      case diceSelected[i] === 1:
-        selectedPoints = 100
+      // 4-o-kind and a pair - two ways 4&2 or 2&4
+      case freqObj[`${freqObjKeyNamesArr[0]}`] === 4 && freqObj[`${freqObjKeyNamesArr[1]}`] === 2:
+        points += 1500
         break
-      // Two - 5s
-      case diceSelected[i] === 5 && diceSelected[i] == 5:
-        selectedPoints = 100
+      case freqObj[`${freqObjKeyNamesArr[0]}`] === 2 && freqObj[`${freqObjKeyNamesArr[1]}`] === 4:
+        points += 1500
         break
-      // One - 5s
-      case diceSelected[i] === 5:
-        selectedPoints = 50
+      // three Pairs
+      case freqObj[`${freqObjKeyNamesArr[0]}`] === 2 && freqObj[`${freqObjKeyNamesArr[1]}`] === 2 && freqObj[`${freqObjKeyNamesArr[2]}`] === 2:
+        points += 1500
+        break
+      // straight 1-6
+      case freqObjKeyNamesArr.length === 6:
+        points += 1500
         break
       default:
-        selectedPoints = 20;
+        for (let i = 0; i < freqObjKeyNamesArr.length; i++) {
+          switch (true) {
+            // Ones freq less than three
+            case freqObjKeyNamesArr[i] == 1 && freqObj[`${freqObjKeyNamesArr[i]}`] < 3:
+              points += freqObj[`${freqObjKeyNamesArr[i]}`] * 100
+              continue
+            // fives freq less than three
+            case freqObjKeyNamesArr[i] == 5 && freqObj[`${freqObjKeyNamesArr[i]}`] < 3:
+              points += freqObj[`${freqObjKeyNamesArr[i]}`] * 50
+              continue
+            // 5-o-kind
+            case freqObj[`${freqObjKeyNamesArr[i]}`] === 5:
+              points += 2000
+              continue
+            // 4-o-kind
+            case freqObj[`${freqObjKeyNamesArr[i]}`] === 4:
+              points += 1000
+              continue
+            // 3-o-kind
+            case freqObj[`${freqObjKeyNamesArr[i]}`] === 3:
+              // three ones
+              if (freqObjKeyNamesArr[i] == 1 ) {
+                points += 300
+                continue
+              // three x
+              } else {
+                points += parseInt(freqObjKeyNamesArr[i]) * 100
+                continue
+              }
+          }
+        }
     }
+    return points
   }
-  uncommitedPoints.innerHTML = selectedPoints
-  console.log(diceSelected)
 }
+
+// Reset
+
 
 // --- Event listeners ---
 // Roll dice
@@ -155,6 +201,5 @@ for (let i = 0; i < dice_positions.length; i++) {
   dice_positions[i].addEventListener('click', () => {
     dice_positions[i].classList.toggle("select")
     diceCheck()
-    selectedDiceScore()
   })
 }

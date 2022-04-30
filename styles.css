@@ -136,6 +136,7 @@ p {
   justify-content: center;
   flex-direction: column;
   padding: 0 100px; /* WIll need to adjust when adding dice */
+  border: 4px solid transparent
 }
 
 .player1-score,
