@@ -7,6 +7,7 @@ const activePlayer_2 = document.getElementById("player2");
 const valuePlayer_1 = document.getElementById("player1-score--value")
 const valuePlayer_2 = document.getElementById("player2-score--value")
 const dice_positions = document.getElementsByClassName('dice');
+const dice_pos1 = document.getElementById("dice-pos1")
 const uncommitedPoints = document.getElementById("currentPoints")
 
 const diceImages = [
@@ -30,6 +31,7 @@ let pointsPlayer1 = 0
 let pointsPlayer2 = 0
 let points = 0
 let totalPoints = 0
+let playerTurnFirstRoll = true
 
 // --- Functions --- \\
 // Rolling Dice
@@ -45,22 +47,26 @@ const rollAvailableDice = () => {
   let tempRoll = 0;
   roundPoints += points
   points = 0
-  
-  for (let i = 0; i < dice_positions.length; i++) {
-    tempRoll = rollDie()
-    if (dice_positions[i].classList[1] === 'select') {
-      tempDice.push(dice[i])
-      tempIgnoreRoll.push(true)
-    } else {
-      tempDice.push(tempRoll)
-      diceAvailable.push(tempRoll)
-      tempIgnoreRoll.push(false)
-      dice_positions[i].src = diceImages[tempRoll - 1];
+
+  if (points !== 0 || playerTurnFirstRoll) {
+    playerTurnFirstRoll = false
+    for (let i = 0; i < dice_positions.length; i++) {
+      tempRoll = rollDie()
+      if (dice_positions[i].classList[1] === 'select') {
+        tempDice.push(dice[i])
+        tempIgnoreRoll.push(true)
+      } else {
+        tempDice.push(tempRoll)
+        diceAvailable.push(tempRoll)
+        tempIgnoreRoll.push(false)
+        dice_positions[i].src = diceImages[tempRoll - 1];
+      }
     }
+    dice = tempDice
+    ignoreRoll = tempIgnoreRoll
   }
-  dice = tempDice
-  ignoreRoll = tempIgnoreRoll
 };
+
 
 // Check dice after selected
 const diceCheck = () => {
@@ -76,36 +82,36 @@ const diceCheck = () => {
   diceSelected = diceSelected.sort()
   selectedDiceScore()
 
-  console.log(`points: ${points}`)
-  console.log(`roundPoints: ${roundPoints}`)
   totalPoints = roundPoints + points
-  console.log(`totalPoints: ${totalPoints}`)
   uncommitedPoints.innerHTML = totalPoints
 }
 
 // Hold dice
 const holdPlayerSwitch = () => {
-  if (activePlayer_1.classList[1] === 'active') {
-    pointsPlayer1 += roundPoints + points
-    valuePlayer_1.innerHTML = pointsPlayer1
-  } else {
-    pointsPlayer2 += roundPoints + points
-    valuePlayer_2.innerHTML = pointsPlayer2
+  if (dice_pos1.src.endsWith("blank_dice.png") === false) {
+    if (activePlayer_1.classList[1] === 'active') {
+      pointsPlayer1 += roundPoints + points
+      valuePlayer_1.innerHTML = pointsPlayer1
+    } else {
+      pointsPlayer2 += roundPoints + points
+      valuePlayer_2.innerHTML = pointsPlayer2
+    }
+  
+    for (i = 0; i < dice_positions.length; i++) {
+      dice_positions[i].classList.remove("select");
+      dice_positions[i].src = diceImageBlank
+    }
+  
+    activePlayer_1.classList.toggle("active");
+    activePlayer_2.classList.toggle("active");
+  
+    diceAvailable = []
+    ignoreRoll = []
+    diceSelected = [];
+    uncommitedPoints.innerHTML = 0
+    roundPoints = 0
+    playerTurnFirstRoll = true
   }
-
-  for (i = 0; i < dice_positions.length; i++) {
-    dice_positions[i].classList.remove("select");
-    dice_positions[i].src = diceImageBlank
-  }
-
-  activePlayer_1.classList.toggle("active");
-  activePlayer_2.classList.toggle("active");
-
-  diceAvailable = []
-  ignoreRoll = []
-  diceSelected = [];
-  uncommitedPoints.innerHTML = 0
-  roundPoints = 0
 }
 
 // Game Points Logic
@@ -199,7 +205,9 @@ holdButton.addEventListener("click", holdPlayerSwitch);
 // Select Die
 for (let i = 0; i < dice_positions.length; i++) {
   dice_positions[i].addEventListener('click', () => {
-    dice_positions[i].classList.toggle("select")
-    diceCheck()
+    if (dice_pos1.src.endsWith("blank_dice.png") === false) {
+      dice_positions[i].classList.toggle("select")
+      diceCheck()
+    }
   })
 }
