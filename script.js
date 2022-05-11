@@ -45,8 +45,6 @@ const rollAvailableDice = () => {
   let tempIgnoreRoll = []
   let tempDice = []
   let tempRoll = 0;
-  roundPoints += points
-  points = 0
 
   if (points !== 0 || playerTurnFirstRoll) {
     playerTurnFirstRoll = false
@@ -62,6 +60,8 @@ const rollAvailableDice = () => {
         dice_positions[i].src = diceImages[tempRoll - 1];
       }
     }
+    roundPoints += points
+    points = 0
     dice = tempDice
     ignoreRoll = tempIgnoreRoll
   }
