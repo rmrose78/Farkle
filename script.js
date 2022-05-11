@@ -32,6 +32,8 @@ let pointsPlayer2 = 0
 let points = 0
 let totalPoints = 0
 let playerTurnFirstRoll = true
+let diceLeadToPoints = [false, false, false, false, false, false]
+let diceLeadToPointsTemp = [false, false, false, false, false, false]
 
 // --- Functions --- \\
 // Rolling Dice
@@ -46,27 +48,27 @@ const rollAvailableDice = () => {
   let tempDice = []
   let tempRoll = 0;
 
-  if (points !== 0 || playerTurnFirstRoll) {
-    playerTurnFirstRoll = false
-    for (let i = 0; i < dice_positions.length; i++) {
-      tempRoll = rollDie()
-      if (dice_positions[i].classList[1] === 'select') {
-        tempDice.push(dice[i])
-        tempIgnoreRoll.push(true)
-      } else {
-        tempDice.push(tempRoll)
-        diceAvailable.push(tempRoll)
-        tempIgnoreRoll.push(false)
-        dice_positions[i].src = diceImages[tempRoll - 1];
-      }
-    }
-    roundPoints += points
-    points = 0
-    dice = tempDice
-    ignoreRoll = tempIgnoreRoll
-  }
-};
 
+  playerTurnFirstRoll = false
+  for (let i = 0; i < dice_positions.length; i++) {
+    tempRoll = rollDie()
+    if (dice_positions[i].classList[1] === 'select') {
+      tempDice.push(dice[i])
+      tempIgnoreRoll.push(true)
+      dice_positions[i].classList.toggle("lock")
+
+    } else {
+      tempDice.push(tempRoll)
+      diceAvailable.push(tempRoll)
+      tempIgnoreRoll.push(false)
+      dice_positions[i].src = diceImages[tempRoll - 1];
+    }
+  }
+  roundPoints += points
+  points = 0
+  dice = tempDice
+  ignoreRoll = tempIgnoreRoll
+};
 
 // Check dice after selected
 const diceCheck = () => {
@@ -74,12 +76,10 @@ const diceCheck = () => {
 
   for (let i = 0; i < dice_positions.length; i++) {
       if (dice_positions[i].classList[1] !== 'select' || ignoreRoll[i]) {
-        continue
       } else {
-      diceSelected.push(dice[i])
+        diceSelected.push(dice[i])
     }
   }
-  diceSelected = diceSelected.sort()
   selectedDiceScore()
 
   totalPoints = roundPoints + points
@@ -119,6 +119,7 @@ const selectedDiceScore = () => {
   let freqObj = {}
   let freqObjKeyNamesArr = []
   points = 0
+  diceLeadToPointsTemp = diceLeadToPoints
 
   if (dice_positions[0].src === diceImageBlank) {
     return points = 0
@@ -131,6 +132,9 @@ const selectedDiceScore = () => {
       }
     })
     freqObjKeyNamesArr= Object.keys(freqObj)
+    // console.log(`Key Names: ${freqObjKeyNamesArr}`)
+    // console.log(`Object: ${freqObj["5"]}`)
+
     switch (true) {
       // 6 of a kind
       case freqObj[`${freqObjKeyNamesArr[0]}`] === 6:
@@ -179,10 +183,14 @@ const selectedDiceScore = () => {
               // three ones
               if (freqObjKeyNamesArr[i] == 1 ) {
                 points += 300
+                dieLeadToPointsBoolean.threeOfKind(1)
                 continue
               // three x
               } else {
-                points += parseInt(freqObjKeyNamesArr[i]) * 100
+                dieValue = parseInt(freqObjKeyNamesArr[i])
+                points += dieValue * 100
+                dieLeadToPointsBoolean.threeOfKind(dieValue)
+                console.log(diceLeadToPointsTemp)
                 continue
               }
           }
@@ -192,21 +200,49 @@ const selectedDiceScore = () => {
   }
 }
 
+// Creating boolean array - Did dice lead to points
+
+const dieLeadToPointsBoolean = {
+  threeOfKind: x => {
+    for (let i = 0; i < dice.length; i++) {
+      if (dice[i] === x && document.getElementById(`dice-pos${i+1}`).classList[1] === 'select' && document.getElementById(`dice-pos${i+1}`).classList[2] !== 'lock') {
+        diceLeadToPointsTemp[i] = true
+      }
+    }
+  }
+}
+
+
 // Reset
 
 
 // --- Event listeners ---
 // Roll dice
-rollButton.addEventListener("click", rollAvailableDice);
+rollButton.addEventListener("click", () => {
+  if (points !== 0 || playerTurnFirstRoll) {
+    diceLeadToPoints = diceLeadToPointsTemp
+    for (let i = 0; i < diceLeadToPoints.length; i++) {
+      if (diceLeadToPoints[i] === false) {
+        document.getElementById(`dice-pos${i+1}`).classList.remove('select')
+      } 
+    }
+    rollAvailableDice()
+  }
+});
 
 // Hold
-holdButton.addEventListener("click", holdPlayerSwitch);
+holdButton.addEventListener("click", () => {
+  holdPlayerSwitch()
+  for (let i = 0; i < dice_positions.length; i++) {
+    dice_positions[i].classList.remove("lock")
+  }
+});
 
 // Select Die
 for (let i = 0; i < dice_positions.length; i++) {
   dice_positions[i].addEventListener('click', () => {
-    if (dice_pos1.src.endsWith("blank_dice.png") === false) {
-      dice_positions[i].classList.toggle("select")
+    if (dice_pos1.src.endsWith("blank_dice.png") === false && dice_positions[i].classList[2] !== 'lock') {
+      dice_positions[i].classList.toggle("select") 
       diceCheck()
     }
   })
