@@ -11,9 +11,11 @@ const uncommitedPoints = document.getElementById("points-current");
 
 document.getElementById("roll-button").addEventListener("click", () => {
   dice.updateShouldRoll();
-  dice.rollAvailable();
+  if (points.turnTotal > 0 || dice.positionValues[0] === 0) {
+    dice.rollAvailable();
+  }
   dice.display();
-  console.log(dice.positionValues);
+
   points.turnTotal += points.selectedTotal;
   points.selectedTotal = 0;
 });
@@ -222,6 +224,8 @@ points = {
     }
   },
 };
+
+diceNoPointReset;
 
 // positionValues Dice rolled lead to points - Reset Roll
 
