@@ -43,9 +43,6 @@ const dice = {
     "./images/6_dice.png",
   ],
 
-  /**
-   * Roll a random number between 1-6.
-   */
   rollDie: function () {
     return Math.floor(Math.random() * 6) + 1;
   },
@@ -59,9 +56,6 @@ const dice = {
     }
   },
 
-  /**
-   * Display dice - If 0 show blank die else show die image of the value.
-   */
   display: function () {
     for (const die of this.positions) {
       this.positionValues[die] === 0
@@ -76,15 +70,15 @@ const dice = {
     }
   },
 
-  /**
-   * Remove 'select' class from all dice
-   */
   removeAllSelect: function () {
     for (const die of this.positions) {
       dicePositions[die].classList.remove("select");
     }
   },
 
+  /**
+   * Update shouldRoll from tempShouldRoll during scoring
+   */
   updateShouldRoll: function () {
     for (const die of dice.positions) {
       if (
@@ -149,10 +143,8 @@ scoring = {
 
   calculate: function () {
     diceSelectedArr = this.diceSelected();
-
     freqObj = this.freq(diceSelectedArr);
     console.log(freqObj);
-
     this.readDiceCombos(freqObj);
   },
 
@@ -183,10 +175,7 @@ scoring = {
 
   readDiceCombos: function (freqObj) {
     scoring.selectedTotal = 0;
-
     freqKeys = Object.keys(freqObj);
-
-    console.log(`freqKeys: ${freqKeys}`);
 
     switch (true) {
       // 6 of a kind
@@ -265,6 +254,7 @@ scoring = {
   },
 };
 
+// Used to create a tempShouldRoll that is reset on each die select, but commited on roll
 const updateTempShouldRoll = {
   allDiceForPoints: function () {
     scoring.tempShouldRoll = [false, false, false, false, false, false];
@@ -280,8 +270,6 @@ const updateTempShouldRoll = {
         scoring.tempShouldRoll[die] = false;
       }
     }
-    console.log(`${dice.shouldRoll}`);
-    console.log(`${scoring.tempShouldRoll}`);
   },
 };
 
