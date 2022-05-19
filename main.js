@@ -6,9 +6,11 @@ const scorePlayer1 = document.getElementById("player1-score--value");
 const scorePlayer2 = document.getElementById("player2-score--value");
 const uncommitedPoints = document.getElementById("points-current");
 const dicePositions = document.getElementsByClassName("dice");
-const rollBtn = document.getElementById("roll-button");
-const holdBtn = document.getElementById("hold-button");
-const resetBtn = document.getElementById("reset");
+const roll = document.getElementById("roll-button");
+const hold = document.getElementById("hold-button");
+const reset = document.getElementById("reset");
+const gameNotify = document.getElementById("gameNotify");
+const select = document.getElementById("dice-container");
 
 // --- DICE --- \\
 
@@ -30,9 +32,6 @@ const dice = {
     return Math.floor(Math.random() * 6) + 1;
   },
 
-  /**
-   * Roll each die based if shouldRoll array is true for that die.
-   */
   rollAvailable: function () {
     for (const die of this.positions) {
       if (this.shouldRoll[die]) this.positionValues[die] = this.rollDie();
@@ -59,9 +58,6 @@ const dice = {
     }
   },
 
-  /**
-   * Update shouldRoll from tempShouldRoll during scoring
-   */
   updateShouldRoll: function () {
     for (const die of dice.positions) {
       if (
@@ -74,27 +70,34 @@ const dice = {
   },
 };
 
-// --- POINTS --- \\
-
 points = {
   player1: 0,
   player2: 0,
   turnTotal: 0,
+  winCondition: 300,
+  lockGame: false,
 
-  updateDisplay: function (selectedTotal) {
+  updatePlayerDisplay: function () {
     if (scoring.selectedTotal === 0) {
       this.turnTotal = 0;
-      selectedTotal = 0;
+      scoring.selectedTotal = 0;
     }
 
     if (activePlayer1.classList.contains("active")) {
-      points.player1 += this.turnTotal + selectedTotal;
+      points.player1 += this.turnTotal + scoring.selectedTotal;
       scorePlayer1.innerHTML = points.player1;
     } else {
-      if (scoring.selectedTotal > 0) {
-        points.player2 += this.turnTotal + selectedTotal;
-        scorePlayer2.innerHTML = points.player2;
-      }
+      points.player2 += this.turnTotal + scoring.selectedTotal;
+      scorePlayer2.innerHTML = points.player2;
+    }
+  },
+
+  toggleLockGame: function (boo) {
+    this.lockGame = boo;
+    if (boo === true) {
+      points.ShouldRoll = [false, false, false, false, false, false];
+    } else {
+      points.ShouldRoll = [true, true, true, true, true, true];
     }
   },
 };
@@ -104,207 +107,220 @@ points = {
 scoring = {
   selectedTotal: 0,
   tempShouldRoll: [true, true, true, true, true, true],
+  diceSelectedArr: [],
+  frequencyObj: {},
 
   calculate: function () {
-    diceSelectedArr = this.diceSelected();
-    freqObj = this.freq(diceSelectedArr);
-    this.readDiceCombos(freqObj);
+    this.diceSelected();
+    this.frequency();
+    this.readDiceCombos();
   },
 
   diceSelected: function () {
-    diceSelectedArr = [];
+    this.diceSelectedArr = [];
     for (const die of dice.positions) {
       if (
         dicePositions[die].classList.contains("select") &&
         dice.shouldRoll[die]
       ) {
-        diceSelectedArr.push(dice.positionValues[die]);
+        this.diceSelectedArr.push(dice.positionValues[die]);
       }
     }
-    return diceSelectedArr;
   },
 
-  freq: function (diceSelectedArr) {
-    freqObj = {};
+  frequency: function () {
+    this.frequencyObj = {};
 
-    diceSelectedArr.forEach((die) => {
-      if (freqObj[die]) freqObj[die]++;
-      else freqObj[die] = 1;
+    this.diceSelectedArr.forEach((die) => {
+      if (this.frequencyObj[die]) this.frequencyObj[die]++;
+      else this.frequencyObj[die] = 1;
     });
-    return freqObj;
   },
 
-  readDiceCombos: function (freqObj) {
+  readDiceCombos: function () {
     scoring.selectedTotal = 0;
-    keysOfFreqObj = Object.keys(freqObj);
+    let keyNames = Object.keys(this.frequencyObj);
 
-    switch (true) {
-      // 6 of a kind
-      case freqObj[keysOfFreqObj[0]] === 6:
-        this.selectedTotal += 3000;
-        updateTempShouldRoll.allDiceForPoints();
-        break;
-      // Two triplets
-      case freqObj[keysOfFreqObj[0]] === 3 &&
-        freqObj[`${keysOfFreqObj[1]}`] === 3:
-        this.selectedTotal += 2500;
-        updateTempShouldRoll.allDiceForPoints();
-        break;
-      // 4-o-kind and a pair - two ways 4&2 or 2&4
-      case freqObj[keysOfFreqObj[0]] === 4 &&
-        freqObj[`${keysOfFreqObj[1]}`] === 2:
-        this.selectedTotal += 1500;
-        updateTempShouldRoll.allDiceForPoints();
-        break;
-      case freqObj[keysOfFreqObj[0]] === 2 &&
-        freqObj[`${keysOfFreqObj[1]}`] === 4:
-        this.selectedTotal += 1500;
-        updateTempShouldRoll.allDiceForPoints();
-        break;
-      // three Pairs
-      case freqObj[keysOfFreqObj[0]] === 2 &&
-        freqObj[keysOfFreqObj[1]] === 2 &&
-        freqObj[keysOfFreqObj[2]] === 2:
-        this.selectedTotal += 1500;
-        updateTempShouldRoll.allDiceForPoints();
-        break;
-      // straight 1-6
-      case keysOfFreqObj.length === 6:
-        this.selectedTotal += 1500;
-        updateTempShouldRoll.allDiceForPoints();
-        break;
-      default:
-        for (let i = 0; i < keysOfFreqObj.length; i++) {
-          switch (true) {
-            // Ones freq less than three
-            case keysOfFreqObj[i] == 1 && freqObj[keysOfFreqObj[i]] < 3:
-              this.selectedTotal += freqObj[`${keysOfFreqObj[i]}`] * 100;
-              updateTempShouldRoll.dieValueAllForPoints(1);
-              continue;
-            // fives freq less than three
-            case keysOfFreqObj[i] == 5 && freqObj[keysOfFreqObj[i]] < 3:
-              this.selectedTotal += freqObj[keysOfFreqObj[i]] * 50;
-              updateTempShouldRoll.dieValueAllForPoints(5);
-              continue;
-            // 5-o-kind
-            case freqObj[keysOfFreqObj[i]] === 5:
-              this.selectedTotal += 2000;
-              dieValue = parseInt(keysOfFreqObj[i]);
-              updateTempShouldRoll.dieValueAllForPoints(dieValue);
-              continue;
-            // 4-o-kind
-            case freqObj[keysOfFreqObj[i]] === 4:
-              this.selectedTotal += 1000;
-              dieValue = parseInt(keysOfFreqObj[i]);
-              updateTempShouldRoll.dieValueAllForPoints(dieValue);
-              continue;
-            // 3-o-kind
-            case freqObj[keysOfFreqObj[i]] === 3:
-              // three ones
-              if (keysOfFreqObj[i] == 1) {
-                this.selectedTotal += 300;
-                updateTempShouldRoll.dieValueAllForPoints(1);
-                continue;
-                // three x
-              } else {
-                dieValue = parseInt(keysOfFreqObj[i]);
-                this.selectedTotal += dieValue * 100;
-                updateTempShouldRoll.dieValueAllForPoints(dieValue);
-                continue;
-              }
+    if (this.diceSelectedArr.length === 6) {
+      if (this.frequencyObj[keyNames[0]] === 6) {
+        this.updatePointsAndTempShouldRoll(3000, true); // 6-of-kind
+        return;
+      } else if (this.frequencyObj[keyNames[0]] === 6) {
+        this.updatePointsAndTempShouldRoll(2500, true); // Two triplets
+        return;
+      } else if (
+        this.frequencyObj[keyNames[0]] === 4 &&
+        this.frequencyObj[keyNames[1]] === 2
+      ) {
+        this.updatePointsAndTempShouldRoll(1500, true); // Quadruplet & pair - 4&2
+        return;
+      } else if (
+        this.frequencyObj[keyNames[0]] === 2 &&
+        this.frequencyObj[keyNames[1]] === 4
+      ) {
+        this.updatePointsAndTempShouldRoll(1500, true); // Quadruplet & pair - 2&4
+        return;
+      } else if (
+        this.frequencyObj[keyNames[0]] === 2 &&
+        this.frequencyObj[keyNames[1]] === 2 &&
+        this.frequencyObj[keyNames[2]] === 2
+      ) {
+        this.updatePointsAndTempShouldRoll(1500, true); // Three Pairs
+        return;
+      } else if (keyNames.length === 6) {
+        this.updatePointsAndTempShouldRoll(1500, true); // Straight
+        return;
+      }
+    } else {
+      for (let i = 0; i < keyNames.length; i++) {
+        if (keyNames[i] == 1 && this.frequencyObj[keyNames[i]] < 3) {
+          pointsSelect = this.frequencyObj[keyNames[i]] * 100;
+          this.updatePointsAndTempShouldRoll(pointsSelect, false, 1); // Ones - frequency < 3
+          continue;
+        } else if (keyNames[i] == 5 && this.frequencyObj[keyNames[i]] < 3) {
+          pointsSelect = this.frequencyObj[keyNames[i]] * 50;
+          this.updatePointsAndTempShouldRoll(pointsSelect, false, 5); // fives - frequency < 3
+          continue;
+        } else if (this.frequencyObj[keyNames[i]] === 5) {
+          dieValue = parseInt(keyNames[i]);
+          this.updatePointsAndTempShouldRoll(2000, false, dieValue); // 5-o-kind
+          continue;
+        } else if (this.frequencyObj[keyNames[i]] === 3) {
+          if (keyNames[i] == 1) {
+            this.updatePointsAndTempShouldRoll(300, false, 1); // Three ones
+            continue;
+          } else {
+            dieValue = parseInt(keyNames[i]);
+            pointsSelect = dieValue * 100;
+            this.updatePointsAndTempShouldRoll(pointsSelect, false, dieValue);
+            continue; // Three Xs
           }
         }
+      }
     }
   },
-};
 
-// tempShouldRoll updated when dice selected and commited to shouldRoll during roll event.
-const updateTempShouldRoll = {
-  allDiceForPoints: function () {
-    scoring.tempShouldRoll = [false, false, false, false, false, false];
+  tempShouldRollAllDiceSelected: function () {
+    this.tempShouldRoll = [false, false, false, false, false, false];
   },
 
-  dieValueAllForPoints: function (dieValue) {
+  tempShouldRollDiceValueSelected: function (dieValue) {
     for (const die of dice.positions) {
       if (
         dice.positionValues[die] === dieValue &&
         dice.shouldRoll[die] &&
         dicePositions[die].classList.contains("select")
       ) {
-        scoring.tempShouldRoll[die] = false;
+        this.tempShouldRoll[die] = false;
       }
     }
   },
+
+  /**
+   * @param {*} points - points to update.
+   * @param {*} boo - Was all dice of one roll used for points?
+   * @param {*} dieValue - if boo = false, die value required.
+   */
+  updatePointsAndTempShouldRoll: function (points, boo, dieValue) {
+    this.selectedTotal = this.selectedTotal + points;
+    if (boo === true) this.tempShouldRollAllDiceSelected();
+    else this.tempShouldRollDiceValueSelected(dieValue);
+  },
 };
 
-// --- ROLL DICE --- \\
+action = {
+  roll: () => {
+    if (!points.lockGame) {
+      if (scoring.selectedTotal > 0 || dice.positionValues.includes(0)) {
+        dice.updateShouldRoll();
+        playerNotificationText("Select Dice, Roll, or Hold");
 
-rollBtn.addEventListener("click", () => {
-  if (scoring.selectedTotal > 0 || dice.positionValues.includes(0)) {
-    dice.updateShouldRoll();
+        if (dice.shouldRoll.every((die) => die === false)) {
+          dice.shouldRoll = [true, true, true, true, true, true];
+          scoring.tempShouldRoll = [true, true, true, true, true, true];
+        }
 
-    if (dice.shouldRoll.every((die) => die === false)) {
-      dice.shouldRoll = [true, true, true, true, true, true];
-      scoring.tempShouldRoll = [true, true, true, true, true, true];
+        dice.rollAvailable();
+        dice.removeSelectIfShouldRollTrue();
+        dice.display();
+        if (scoring.selectedTotal !== 0)
+          points.turnTotal += scoring.selectedTotal;
+        scoring.selectedTotal = 0;
+      } else {
+        dice.removeSelectIfShouldRollTrue();
+      }
     }
+  },
 
-    dice.rollAvailable();
-    dice.removeSelectIfShouldRollTrue();
-    dice.display();
-    if (scoring.selectedTotal !== 0) points.turnTotal += scoring.selectedTotal;
-    scoring.selectedTotal = 0;
-  } else {
-    dice.removeSelectIfShouldRollTrue();
-  }
-});
+  select: (e) => {
+    let die = e.target;
+    let dicePosition = [...die.parentNode.children].indexOf(die);
 
-// --- SELECT --- \\
-
-// Event listeners added on all dice for toggling the 'select' class
-for (const die of dice.positions) {
-  dicePositions[die].addEventListener("click", () => {
-    if (dice.shouldRoll[die] && !dice.positionValues.includes(0)) {
-      dicePositions[die].classList.toggle("select");
-      scoring.calculate();
-      uncommitedPoints.innerHTML = points.turnTotal + scoring.selectedTotal;
+    if (e.target.classList.contains("dice")) {
+      if (!points.lockGame) {
+        if (dice.shouldRoll[dicePosition] && !dice.positionValues.includes(0)) {
+          die.classList.toggle("select");
+          scoring.calculate();
+          uncommitedPoints.innerHTML = points.turnTotal + scoring.selectedTotal;
+        }
+      }
     }
-  });
-}
+  },
 
-// --- HOLD --- \\
+  hold: () => {
+    if (!points.lockGame) {
+      if (!dice.positionValues.includes(0)) {
+        points.updatePlayerDisplay();
+        if (
+          points.player1 >= points.winCondition ||
+          points.player2 >= points.winCondition
+        ) {
+          playerNotificationText("WINS!!!!");
+          points.toggleLockGame(true);
+        } else {
+          activePlayer1.classList.toggle("active");
+          activePlayer2.classList.toggle("active");
+          playerNotificationText("Roll Dice");
+          points.turnTotal = 0;
+          scoring.selectedTotal = 0;
+          uncommitedPoints.innerHTML = 0;
+          dice.removeAllSelect();
+          dice.positionValues = [0, 0, 0, 0, 0, 0];
+          dice.shouldRoll = [true, true, true, true, true, true];
+          scoring.tempShouldRoll = [true, true, true, true, true, true];
+          dice.display();
+        }
+      }
+    }
+  },
 
-// Hold Dice - Switch player
-holdBtn.addEventListener("click", () => {
-  if (!dice.positionValues.includes(0)) {
-    points.updateDisplay(scoring.selectedTotal);
-    activePlayer1.classList.toggle("active");
-    activePlayer2.classList.toggle("active");
+  reset: () => {
+    activePlayer1.classList.add("active");
+    activePlayer2.classList.remove("active");
+    playerNotificationText("Roll Dice");
+    points.toggleLockGame(false);
+    points.player1 = 0;
+    points.player2 = 0;
     points.turnTotal = 0;
     scoring.selectedTotal = 0;
     uncommitedPoints.innerHTML = 0;
+    scorePlayer1.innerHTML = 0;
+    scorePlayer2.innerHTML = 0;
     dice.removeAllSelect();
     dice.positionValues = [0, 0, 0, 0, 0, 0];
     dice.shouldRoll = [true, true, true, true, true, true];
     scoring.tempShouldRoll = [true, true, true, true, true, true];
     dice.display();
-  }
-});
+  },
+};
 
-// --- RESET --- \\
+const playerNotificationText = (text) => {
+  if (activePlayer1.classList.contains("active"))
+    notification.innerHTML = `Player 1: ${text}`;
+  else notification.innerHTML = `Player 2: ${text}`;
+};
 
-resetBtn.addEventListener("click", () => {
-  activePlayer1.classList.add("active");
-  activePlayer2.classList.remove("active");
-  points.player1 = 0;
-  points.player2 = 0;
-  points.turnTotal = 0;
-  scoring.selectedTotal = 0;
-  uncommitedPoints.innerHTML = 0;
-  scorePlayer1.innerHTML = 0;
-  scorePlayer2.innerHTML = 0;
-  dice.removeAllSelect();
-  dice.positionValues = [0, 0, 0, 0, 0, 0];
-  dice.shouldRoll = [true, true, true, true, true, true];
-  scoring.tempShouldRoll = [true, true, true, true, true, true];
-  dice.display();
-});
+roll.addEventListener("click", () => action.roll());
+select.addEventListener("click", (e) => action.select(e));
+hold.addEventListener("click", () => action.hold());
+reset.addEventListener("click", () => action.reset());
