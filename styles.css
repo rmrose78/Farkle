@@ -106,7 +106,7 @@ p {
   flex-direction: column;
 }
 .main > div {
-  margin: 30px;
+  margin: 20px;
 }
 
 .points-current-container {
@@ -167,8 +167,15 @@ p {
 .active {
   border: 4px solid #4682b4;
 }
+
+/* --------------- Notification --------------- */
+
+.notification {
+  margin: 0;
+}
+
 /* --------------- Dice Area --------------- */
-.dice-container {
+#dice-container {
   display: flex;
   align-items: center;
   justify-content: center;
