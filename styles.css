@@ -79,25 +79,31 @@ body {
 }
 
 h1 {
-  font-size: 3.5rem;
+  font-size: 2rem;
 }
 
 h2 {
-  font-size: 1.7rem;
+  font-size: 1.4rem;
 }
 
 h3 {
-  font-size: 1.3rem;
+  font-size: 1.1rem;
 }
 
 p {
-  font-size: 0.7rem;
+  font-size: 0.8rem;
 }
 
 /* --------------- Main --------------- */
+
+body {
+  overflow-x: hidden;
+}
+
 header {
   display: flex;
   justify-content: space-between;
+  width: 100vw;
 }
 
 .main {
@@ -108,7 +114,7 @@ header {
 }
 
 .main > div {
-  margin: 20px;
+  margin: 10px 20px;
 }
 
 .points-current-container {
@@ -123,7 +129,6 @@ header {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  padding-top: 20px;
 }
 
 /* --------------- Player Container --------------- */
@@ -134,42 +139,49 @@ header {
 }
 
 .bottom-container > div {
-  margin: 20px;
+  /* margin: 20px; */
 }
 
 .btn-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
 }
 
-.player1-container,
-.player2-container {
+.player-container {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  padding: 0 100px; /* WIll need to adjust when adding dice */
+  width: 45vw;
   border: 4px solid transparent;
 }
 
-.player1-score,
-.player2-score {
-  padding: 15px;
+.player-score {
+  padding: 5px;
 }
 
 .player-title {
-  padding-top: 30px;
+  padding-top: 15px;
 }
-.active {
+.player-container.active {
+  background-color: #4682b4;
+  color: black;
   border: 4px solid #4682b4;
 }
 
+.win-condition p {
+  margin-top: 10px;
+  font-size: 0.7rem;
+}
 /* --------------- Notification --------------- */
 
-.notification {
-  margin: 0;
+#notification {
+  font-size: 0.6rem;
+  height: 5vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* --------------- Dice Area --------------- */
@@ -177,12 +189,14 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
 }
+
 .dice {
   width: auto;
   height: 80px;
   border: 4px solid #4682b4;
-  margin-right: 30px;
+  margin: 10px 10px;
   cursor: pointer;
 }
 
@@ -198,6 +212,7 @@ button {
   font-family: "Press Start 2p";
   cursor: pointer;
   margin: 20px;
+  font-size: 0.8rem;
 }
 
 .btn-action {
@@ -224,10 +239,9 @@ button {
   top: 50%;
   right: 50%;
   transform: translate(50%, -50%);
-  width: 70vw;
-  height: 70vh;
+  width: 100vw;
+  height: 100vh;
   background: black;
-  border: solid 4px #4682b4;
 }
 
 #rules--container.show {
@@ -252,12 +266,14 @@ button {
   height: 80%;
   overflow: auto;
 }
-.rules-text--container h1 {
-  text-align: center;
-}
 
 .combo-list > li {
   list-style: none;
+  font-size: 0.6rem;
+}
+
+.rules-list {
+  font-size: 0.7rem;
 }
 
 ::-webkit-scrollbar {
