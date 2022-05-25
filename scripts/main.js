@@ -4,6 +4,7 @@ const scorePlayer1 = document.getElementById("player1-score--value");
 const scorePlayer2 = document.getElementById("player2-score--value");
 const uncommitedPoints = document.getElementById("points-current");
 const dicePositions = document.getElementsByClassName("dice");
+const notification = document.getElementById("notification");
 const roll = document.getElementById("roll-button");
 const hold = document.getElementById("hold-button");
 const reset = document.getElementById("reset");
