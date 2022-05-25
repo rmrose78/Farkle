@@ -4,14 +4,28 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
+      integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
     <link rel="stylesheet" href="styles.css" />
+
     <title>Farkle</title>
   </head>
   <body>
     <!-- Main Page -->
-    <div class="reset-container">
-      <button id="reset" class="btn btn-reset">Reset</button>
-    </div>
+    <header>
+      <div class="reset-container">
+        <button id="reset" class="btn btn-header">Reset</button>
+      </div>
+      <div class="info-container">
+        <button id="info" class="btn btn-header">Rules</button>
+      </div>
+    </header>
+
     <div class="main">
       <div class="Reset"></div>
       <h1>Dice Game</h1>
@@ -77,6 +91,98 @@
         <p>First to <span class="win-condition">10,000</span> wins</p>
       </div>
     </div>
-    <script src="main.js"></script>
+
+    <!-- Rules -->
+    <div id="rules--container">
+      <i id="close-btn" class="fa-solid fa-x"></i>
+
+      <div id="rules-main--container">
+        <div id="rules-text--container">
+          <h1 class="center-text">How to Play</h1>
+          <br />
+          <h2>Let's Play!</h2>
+          <br />
+          <ul class="rules-list">
+            <li>Player ROLLs dice</li>
+            &nbsp;
+            <li>
+              Player SELECTs dice based on dice combo sheet to score points.
+            </li>
+            &nbsp;
+            <li>
+              Player may choose to ROLL again with the remaining dice that has
+              not yet been selected.
+            </li>
+            &nbsp;
+            <li>
+              If a player ROLLs and no points are SELECTed on ROLL, all points
+              that turn are lost.
+            </li>
+            &nbsp;
+            <li>
+              A player may choose to HOLD instead, ending their turn while
+              locking in the points earned.
+            </li>
+            &nbsp;
+            <li>
+              If all dice are SELECTed for points during a player's turn, all
+              dice will be reset and that player continue their turn.
+            </li>
+            &nbsp;
+            <li>First player to hit 10,000 points wins!!!</li>
+            &nbsp;
+          </ul>
+          &nbsp;
+          <h1 class="center-text">Dice Combos</h1>
+          &nbsp;
+          <div class="center-text">
+            <ul class="combo-list">
+              <li>6-of-a-kind&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 3,000 pts</li>
+              <li>Two triplets&nbsp;&nbsp;&nbsp;&nbsp;= 2,500 pts</li>
+              <li>5-of-a-kind&nbsp;&nbsp;&nbsp;&nbsp; = 2,000 pts</li>
+              <li>Straight (1-6)&nbsp; = 1,500 pts</li>
+              <li>Three pairs&nbsp;&nbsp;&nbsp;&nbsp; = 1,500 pts</li>
+              <li>Four and a Pair = 1,500 pts</li>
+              <li>4-of-a-kind &nbsp;&nbsp;&nbsp;&nbsp;= 1,000 pts</li>
+              <li>
+                6, 6, 6&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+                600 pts
+              </li>
+              <li>
+                5, 5, 5&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 500
+                pts
+              </li>
+              <li>
+                4, 4, 4&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 400
+                pts
+              </li>
+              <li>
+                3, 3, 3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 300
+                pts
+              </li>
+              <li>
+                2, 2, 2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 200
+                pts
+              </li>
+              <li>
+                1, 1, 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; = 300
+                pts
+              </li>
+              <li>
+                Ones&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                = 100 pts
+              </li>
+              <li>
+                Fives&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                = 50 pts
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="/scripts/main.js"></script>
+    <script src="/scripts/info.js"></script>
   </body>
 </html>

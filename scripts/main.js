@@ -1,5 +1,3 @@
-// --- DOM ELEMENTS --- \\
-
 const activePlayer1 = document.getElementById("player1");
 const activePlayer2 = document.getElementById("player2");
 const scorePlayer1 = document.getElementById("player1-score--value");
@@ -9,14 +7,11 @@ const dicePositions = document.getElementsByClassName("dice");
 const roll = document.getElementById("roll-button");
 const hold = document.getElementById("hold-button");
 const reset = document.getElementById("reset");
-const gameNotify = document.getElementById("gameNotify");
 const select = document.getElementById("dice-container");
 
-// --- DICE --- \\
-
 const dice = {
-  positionValues: [0, 0, 0, 0, 0, 0],
-  shouldRoll: [true, true, true, true, true, true],
+  positionValues: Array(6).fill(0),
+  shouldRoll: Array(6).fill(false),
   positions: [0, 1, 2, 3, 4, 5],
   images: [
     "./images/blank_dice.png",
@@ -74,7 +69,7 @@ points = {
   player1: 0,
   player2: 0,
   turnTotal: 0,
-  winCondition: 300,
+  winCondition: 10_000,
   lockGame: false,
 
   updatePlayerDisplay: function () {
@@ -92,12 +87,12 @@ points = {
     }
   },
 
-  toggleLockGame: function (boo) {
-    this.lockGame = boo;
-    if (boo === true) {
-      points.ShouldRoll = [false, false, false, false, false, false];
+  toggleLockGame: function (bool) {
+    this.lockGame = bool;
+    if (bool === true) {
+      points.ShouldRoll = Array(6).fill(false);
     } else {
-      points.ShouldRoll = [true, true, true, true, true, true];
+      points.ShouldRoll = Array(6).fill(true);
     }
   },
 };
@@ -106,9 +101,10 @@ points = {
 
 scoring = {
   selectedTotal: 0,
-  tempShouldRoll: [true, true, true, true, true, true],
+  tempShouldRoll: Array(6).fill(true),
   diceSelectedArr: [],
   frequencyObj: {},
+  keyNames: [],
 
   calculate: function () {
     this.diceSelected();
@@ -139,61 +135,55 @@ scoring = {
 
   readDiceCombos: function () {
     scoring.selectedTotal = 0;
-    let keyNames = Object.keys(this.frequencyObj);
+    this.keyNames = Object.keys(this.frequencyObj);
 
     if (this.diceSelectedArr.length === 6) {
-      if (this.frequencyObj[keyNames[0]] === 6) {
-        this.updatePointsAndTempShouldRoll(3000, true); // 6-of-kind
+      if (this.sixOfAKind()) {
+        this.updatePointsAndTempShouldRoll(3000, true);
         return;
-      } else if (this.frequencyObj[keyNames[0]] === 6) {
-        this.updatePointsAndTempShouldRoll(2500, true); // Two triplets
+      } else if (this.twoTriplets()) {
+        this.updatePointsAndTempShouldRoll(2500, true);
         return;
-      } else if (
-        this.frequencyObj[keyNames[0]] === 4 &&
-        this.frequencyObj[keyNames[1]] === 2
-      ) {
-        this.updatePointsAndTempShouldRoll(1500, true); // Quadruplet & pair - 4&2
+      } else if (this.quadrupletAndPair1()) {
+        this.updatePointsAndTempShouldRoll(1500, true);
         return;
-      } else if (
-        this.frequencyObj[keyNames[0]] === 2 &&
-        this.frequencyObj[keyNames[1]] === 4
-      ) {
-        this.updatePointsAndTempShouldRoll(1500, true); // Quadruplet & pair - 2&4
+      } else if (this.quadrupletAndPair2()) {
+        this.updatePointsAndTempShouldRoll(1500, true);
         return;
-      } else if (
-        this.frequencyObj[keyNames[0]] === 2 &&
-        this.frequencyObj[keyNames[1]] === 2 &&
-        this.frequencyObj[keyNames[2]] === 2
-      ) {
-        this.updatePointsAndTempShouldRoll(1500, true); // Three Pairs
+      } else if (this.threePairs()) {
+        this.updatePointsAndTempShouldRoll(1500, true);
         return;
-      } else if (keyNames.length === 6) {
-        this.updatePointsAndTempShouldRoll(1500, true); // Straight
+      } else if (this.straight()) {
+        this.updatePointsAndTempShouldRoll(1500, true);
         return;
       }
     } else {
-      for (let i = 0; i < keyNames.length; i++) {
-        if (keyNames[i] == 1 && this.frequencyObj[keyNames[i]] < 3) {
-          pointsSelect = this.frequencyObj[keyNames[i]] * 100;
-          this.updatePointsAndTempShouldRoll(pointsSelect, false, 1); // Ones - frequency < 3
+      for (let i = 0; i < this.keyNames.length; i++) {
+        if (this.onesFreqLessThanThree(i)) {
+          pointsSelect = this.frequencyObj[this.keyNames[i]] * 100;
+          this.updatePointsAndTempShouldRoll(pointsSelect, false, 1);
           continue;
-        } else if (keyNames[i] == 5 && this.frequencyObj[keyNames[i]] < 3) {
-          pointsSelect = this.frequencyObj[keyNames[i]] * 50;
-          this.updatePointsAndTempShouldRoll(pointsSelect, false, 5); // fives - frequency < 3
+        } else if (this.fivesFreqLessThanThree(i)) {
+          pointsSelect = this.frequencyObj[this.keyNames[i]] * 50;
+          this.updatePointsAndTempShouldRoll(pointsSelect, false, 5);
           continue;
-        } else if (this.frequencyObj[keyNames[i]] === 5) {
-          dieValue = parseInt(keyNames[i]);
-          this.updatePointsAndTempShouldRoll(2000, false, dieValue); // 5-o-kind
+        } else if (this.fiveOfAKind()) {
+          dieValue = parseInt(this.keyNames[i]);
+          this.updatePointsAndTempShouldRoll(2000, false, dieValue);
           continue;
-        } else if (this.frequencyObj[keyNames[i]] === 3) {
-          if (keyNames[i] == 1) {
-            this.updatePointsAndTempShouldRoll(300, false, 1); // Three ones
+        } else if (this.fourOfAKind()) {
+          dieValue = parseInt(this.keyNames[i]);
+          this.updatePointsAndTempShouldRoll(1000, false, dieValue);
+          continue;
+        } else if (this.threeOfAKind(i)) {
+          if (this.threeOnes(i)) {
+            this.updatePointsAndTempShouldRoll(300, false, 1);
             continue;
           } else {
-            dieValue = parseInt(keyNames[i]);
+            dieValue = parseInt(this.keyNames[i]);
             pointsSelect = dieValue * 100;
             this.updatePointsAndTempShouldRoll(pointsSelect, false, dieValue);
-            continue; // Three Xs
+            continue;
           }
         }
       }
@@ -201,7 +191,7 @@ scoring = {
   },
 
   tempShouldRollAllDiceSelected: function () {
-    this.tempShouldRoll = [false, false, false, false, false, false];
+    this.tempShouldRoll = Array(6).fill(false);
   },
 
   tempShouldRollDiceValueSelected: function (dieValue) {
@@ -218,26 +208,94 @@ scoring = {
 
   /**
    * @param {*} points - points to update.
-   * @param {*} boo - Was all dice of one roll used for points?
+   * @param {*} bool - Was all dice in one roll used for points?
    * @param {*} dieValue - if boo = false, die value required.
    */
-  updatePointsAndTempShouldRoll: function (points, boo, dieValue) {
+  updatePointsAndTempShouldRoll: function (points, bool, dieValue) {
     this.selectedTotal = this.selectedTotal + points;
-    if (boo === true) this.tempShouldRollAllDiceSelected();
+    if (bool === true) this.tempShouldRollAllDiceSelected();
     else this.tempShouldRollDiceValueSelected(dieValue);
+  },
+
+  sixOfAKind: function () {
+    return this.frequencyObj[this.keyNames[0]] === 6;
+  },
+
+  twoTriplets: function () {
+    return (
+      this.frequencyObj[this.keyNames[0]] === 3 &&
+      this.frequencyObj[this.keyNames[1]] === 3
+    );
+  },
+
+  quadrupletAndPair1: function () {
+    return (
+      this.frequencyObj[this.keyNames[0]] === 4 &&
+      this.frequencyObj[this.keyNames[1]] === 2
+    );
+  },
+
+  quadrupletAndPair2: function () {
+    return (
+      this.frequencyObj[this.keyNames[0]] === 2 &&
+      this.frequencyObj[this.keyNames[1]] === 4
+    );
+  },
+
+  threePairs: function () {
+    return (
+      this.frequencyObj[this.keyNames[0]] === 2 &&
+      this.frequencyObj[this.keyNames[1]] === 2 &&
+      this.frequencyObj[this.keyNames[2]] === 2
+    );
+  },
+
+  straight: function () {
+    return this.keyNames.length === 6;
+  },
+
+  onesFreqLessThanThree: function (i) {
+    return this.keyNames[i] == 1 && this.frequencyObj[this.keyNames[i]] < 3;
+  },
+
+  fivesFreqLessThanThree: function (i) {
+    return this.keyNames[i] == 5 && this.frequencyObj[this.keyNames[i]] < 3;
+  },
+
+  fiveOfAKind: function () {
+    return (
+      this.frequencyObj[this.keyNames[0]] === 5 ||
+      this.frequencyObj[this.keyNames[1]] === 5
+    );
+  },
+
+  fourOfAKind: function () {
+    return (
+      this.frequencyObj[this.keyNames[0]] === 4 ||
+      this.frequencyObj[this.keyNames[1]] === 4 ||
+      this.frequencyObj[this.keyNames[2]] === 4
+    );
+  },
+
+  threeOfAKind: function (i) {
+    return this.frequencyObj[this.keyNames[i]] === 3;
+  },
+
+  threeOnes: function (i) {
+    return this.keyNames[i] == 1;
   },
 };
 
 action = {
-  roll: () => {
+  roll: function () {
     if (!points.lockGame) {
       if (scoring.selectedTotal > 0 || dice.positionValues.includes(0)) {
         dice.updateShouldRoll();
         playerNotificationText("Select Dice, Roll, or Hold");
 
         if (dice.shouldRoll.every((die) => die === false)) {
-          dice.shouldRoll = [true, true, true, true, true, true];
-          scoring.tempShouldRoll = [true, true, true, true, true, true];
+          dice.shouldRoll = Array(6).fill(true);
+          scoring.tempShouldRoll = Array(6).fill(true);
         }
 
         dice.rollAvailable();
@@ -252,7 +310,7 @@ action = {
     }
   },
 
-  select: (e) => {
+  select: function (e) {
     let die = e.target;
     let dicePosition = [...die.parentNode.children].indexOf(die);
 
@@ -267,7 +325,7 @@ action = {
     }
   },
 
-  hold: () => {
+  hold: function () {
     if (!points.lockGame) {
       if (!dice.positionValues.includes(0)) {
         points.updatePlayerDisplay();
@@ -285,16 +343,16 @@ action = {
           scoring.selectedTotal = 0;
           uncommitedPoints.innerHTML = 0;
           dice.removeAllSelect();
-          dice.positionValues = [0, 0, 0, 0, 0, 0];
-          dice.shouldRoll = [true, true, true, true, true, true];
-          scoring.tempShouldRoll = [true, true, true, true, true, true];
+          dice.positionValues = Array(6).fill(0);
+          dice.shouldRoll = Array(6).fill(true);
+          scoring.tempShouldRoll = Array(6).fill(true);
           dice.display();
         }
       }
     }
   },
 
-  reset: () => {
+  reset: function () {
     activePlayer1.classList.add("active");
     activePlayer2.classList.remove("active");
     playerNotificationText("Roll Dice");
@@ -307,9 +365,9 @@ action = {
     scorePlayer1.innerHTML = 0;
     scorePlayer2.innerHTML = 0;
     dice.removeAllSelect();
-    dice.positionValues = [0, 0, 0, 0, 0, 0];
-    dice.shouldRoll = [true, true, true, true, true, true];
-    scoring.tempShouldRoll = [true, true, true, true, true, true];
+    dice.positionValues = Array(6).fill(0);
+    dice.shouldRoll = Array(6).fill(true);
+    scoring.tempShouldRoll = Array(6).fill(true);
     dice.display();
   },
 };
@@ -320,7 +378,13 @@ const playerNotificationText = (text) => {
   else notification.innerHTML = `Player 2: ${text}`;
 };
 
-roll.addEventListener("click", () => action.roll());
-select.addEventListener("click", (e) => action.select(e));
-hold.addEventListener("click", () => action.hold());
-reset.addEventListener("click", () => action.reset());
+const listeners = [
+  [roll, action.roll],
+  [select, action.select],
+  [hold, action.hold],
+  [reset, action.reset],
+];
+
+listeners.forEach((listener) =>
+  listener[0].addEventListener("click", listener[1])
+);
